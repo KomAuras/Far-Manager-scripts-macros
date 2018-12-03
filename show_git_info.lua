@@ -1,12 +1,12 @@
 --[[
-  Показывает на панели внизу текущую ветку git
-  За основу взят "Запуск макроса по событию смены директории"
+  РџРѕРєР°Р·С‹РІР°РµС‚ РЅР° РїР°РЅРµР»Рё РІРЅРёР·Сѓ С‚РµРєСѓС‰СѓСЋ РІРµС‚РєСѓ git
+  Р—Р° РѕСЃРЅРѕРІСѓ РІР·СЏС‚ "Р—Р°РїСѓСЃРє РјР°РєСЂРѕСЃР° РїРѕ СЃРѕР±С‹С‚РёСЋ СЃРјРµРЅС‹ РґРёСЂРµРєС‚РѕСЂРёРё"
   https://forum.farmanager.com/viewtopic.php?t=10521&start=16
 --]]
 
 local POLL_INTERVAL = 1000
-local BOOST_INTERVAL = 100
-local DISPLAY_INTERVAL = 100
+local BOOST_INTERVAL = 1
+local DISPLAY_INTERVAL = 1
 
 local COL_MENUTEXT, COL_MENUSELECTEDTEXT, COL_MENUHIGHLIGHT,
   COL_MENUSELECTEDHIGHLIGHT, COL_MENUBOX, COL_MENUTITLE = 0,1,2,3,4,5
@@ -30,11 +30,14 @@ local function GetColor (index)
   return far.AdvControl("ACTL_GETCOLOR", index)
 end
 
-local APanelPath = ''
-local PPanelPath = ''
+local APanelPath = ""
+local PPanelPath = ""
 local APanelText = ""
 local PPanelText = ""
-local color = GetColor(9)
+local ALevel = ""
+local PLevel = ""
+local color = GetColor(9) -- yellow on black
+--local color = GetColor(35) -- white on red
 
 local function GetBranchName(file)
   local fp = io.open(file, "r")
@@ -45,19 +48,21 @@ local function GetBranchName(file)
   return names[3]
 end
 
-local function RecursiveSearch(path)
+local function RecursiveSearch(path,level)
+  level = level or 0
   if FileExists(path.."\\.git\\HEAD") then
-    return path.."\\.git\\HEAD"
+    return path.."\\.git\\HEAD", level
   end
   local lastdotpos = (path:reverse()):find("%\\")
-  if lastdotpos == nil then return nil end
-  return RecursiveSearch(path:sub(1, -lastdotpos-1))
+  if lastdotpos == nil then return nil,0 end
+  level=level+1
+  return RecursiveSearch(path:sub(1, -lastdotpos-1),level)
 end
 
 local function GetPanelState()
   if APanelPath ~= APanel.Path0 then
     APanelPath = APanel.Path0
-    found = RecursiveSearch(APanelPath)
+    found, ALevel = RecursiveSearch(APanelPath)
     if found ~= nil then
       APanelText = GetBranchName(found)
     else
@@ -68,7 +73,7 @@ local function GetPanelState()
 
   if PPanelPath ~= PPanel.Path0 then
     PPanelPath = PPanel.Path0
-    found = RecursiveSearch(PPanelPath)
+    found, PLevel = RecursiveSearch(PPanelPath)
     if found ~= nil then
       PPanelText = GetBranchName(found)
     else
@@ -87,21 +92,29 @@ end)
 
 otimer = far.Timer(POLL_INTERVAL, function(otimer)
   otimer.Enabled = false
-  local b
+  local b, fl
   if Area.Current == "Shell" then
     if APanel.Visible then
       b = 1
       if not APanel.Left then
         b = PPanel.Width + 1
       end
-      far.Text(b, APanel.Height-3, color, APanelText)
+      fl=""
+      if ALevel == 0 then fl="*" end
+      if APanelText ~= "" then
+        far.Text(b, APanel.Height-3, color, " "..fl..APanelText.." ")
+      end
     end
     if PPanel.Visible then
       b = 1
       if not PPanel.Left then
         b = APanel.Width + 1
       end
-      far.Text(b, PPanel.Height-3, color, PPanelText)
+      fl=""
+      if PLevel == 0 then fl="*" end
+      if PPanelText ~= "" then
+        far.Text(b, PPanel.Height-3, color, " "..fl..PPanelText.." ")
+      end
     end
   end
   otimer.Interval = DISPLAY_INTERVAL
