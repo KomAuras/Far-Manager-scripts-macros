@@ -62,7 +62,10 @@ end
 local function GetPanelState()
   if APanelPath ~= APanel.Path0 then
     APanelPath = APanel.Path0
-    found, ALevel = RecursiveSearch(APanelPath)
+    found = nil
+    if APanel.DriveType ~= 4 then
+      found, ALevel = RecursiveSearch(APanelPath)
+    end
     if found ~= nil then
       APanelText = GetBranchName(found)
     else
@@ -73,7 +76,10 @@ local function GetPanelState()
 
   if PPanelPath ~= PPanel.Path0 then
     PPanelPath = PPanel.Path0
-    found, PLevel = RecursiveSearch(PPanelPath)
+    found = nil
+    if PPanel.DriveType ~= 4 then
+      found, PLevel = RecursiveSearch(PPanelPath)
+    end
     if found ~= nil then
       PPanelText = GetBranchName(found)
     else
