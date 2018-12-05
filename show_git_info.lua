@@ -2,7 +2,9 @@
   Показывает на панели внизу текущую ветку git
   За основу взят "Запуск макроса по событию смены директории"
   https://forum.farmanager.com/viewtopic.php?t=10521&start=16
---]]
+  Отладка производится с помощью win.OutputDebugString('debug')
+  https://docs.microsoft.com/ru-ru/sysinternals/downloads/debugview
+]]
 
 local POLL_INTERVAL = 1000
 local BOOST_INTERVAL = 1
