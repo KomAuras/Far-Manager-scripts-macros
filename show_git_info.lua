@@ -41,13 +41,24 @@ local PLevel = ""
 local color = GetColor(9) -- yellow on black
 --local color = GetColor(35) -- white on red
 
+local function GetTableLen(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
+
 local function GetBranchName(file)
+  win.OutputDebugString(file)
   local fp = io.open(file, "r")
   local str = fp:read("*all")
   fp:close()
   str = string.gsub(str, "\n", "")
   names = split(str, "/")
-  return names[3]
+  result = names[3]
+  if GetTableLen(names) == 1 then
+    result = string.sub(str, 1, 6)
+  end
+  return result
 end
 
 local function RecursiveSearch(path,level)
@@ -109,7 +120,7 @@ otimer = far.Timer(POLL_INTERVAL, function(otimer)
       end
       fl=""
       if ALevel == 0 then fl="*" end
-      if APanelText ~= "" then
+      if APanelText ~= "" and APanelText ~= nil then
         far.Text(b, APanel.Height-3, color, " "..fl..APanelText.." ")
       end
     end
@@ -120,7 +131,7 @@ otimer = far.Timer(POLL_INTERVAL, function(otimer)
       end
       fl=""
       if PLevel == 0 then fl="*" end
-      if PPanelText ~= "" then
+      if PPanelText ~= "" and PPanelText ~= nil then
         far.Text(b, PPanel.Height-3, color, " "..fl..PPanelText.." ")
       end
     end
